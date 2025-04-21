@@ -1,0 +1,33 @@
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - 80:8080
+      - 50000:50000
+    volumes:
+      - vol-jenkins-data:/var/jenkins_home
+      # - ./vol-jenkins-data:/var/jenkins_home  # ne fonctionne pas a l'interieur d'une VM
+    environment:
+      - JAVA_OPTS="-Dhudson.security.csrf.GlobalCrumbIssuerConfiguration.DISABLE_CSRF_PROTECTION=true"
+    restart: always # utile pour relancer jenkins lors de l'ajout de plugins
+    networks:
+      - jenkins_net
+
+  dind:
+    build:
+      context: .
+      dockerfile: dind/Dockerfile
+    privileged: true
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+      - DOCKER_DRIVER=overlay2
+    volumes:
+      - /var/lib/docker
+    networks:
+      - jenkins_net
+
+networks:
+  jenkins_net:
+
+volumes:
+  vol-jenkins-data:

@@ -1,0 +1,35 @@
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - ./front:/var/www/html
+      - ./nginx/chuck.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - chuck-citations-net
+
+  api:
+    image: registry.home.arpa:80/chuck-citations-api:latest
+    environment:
+      PGUSER: postgres
+      PGHOST: database
+      PGDATABASE: chuck_citations
+      PGPASSWORD: postgres
+      PGPORT: 5432
+    networks:
+      - chuck-citations-net
+
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: chuck_citations
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d
+    networks:
+      - chuck-citations-net
+
+networks:
+  chuck-citations-net:
